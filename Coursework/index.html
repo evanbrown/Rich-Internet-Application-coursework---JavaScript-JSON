@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="author" content="Evan Brown" />
+  <meta name="keywords" content="GCU, USA" />
+  <meta name="description" content="GCU USA" />
+  <link rel="stylesheet" type="text/css" href="./Styles/styles2012.css" title="Default" media="all" />
+  <link rel="Stylesheet" type="text/css" href="./css/formstyles.css" media="all" />        
+  <title>GCU USA</title>
+  <script type="text/JavaScript" src="json.js"></script>
+  <script language="JavaScript" type="text/JavaScript">
+	
+	var req;	
+
+	function getStates()
+	{
+		var url = "states_json.php";
+
+        req = new XMLHttpRequest();
+
+    	req.open("GET", url, true);
+    	req.onreadystatechange = getStatesCallBack;
+    	req.send(null);
+	}
+
+	function getStatesCallBack()
+	{
+		if (req.readyState == 4) {
+        	if (req.status == 200) {
+        	    
+        	    var response = req.responseText.parseJSON();
+				var displaycontent = document.getElementById("displaycontent");
+				
+				while (displaycontent.hasChildNodes()) {
+    				displaycontent.removeChild(displaycontent.lastChild);
+				}
+
+				var stateSelect = document.createElement("select");
+				stateSelect.setAttribute("id","stateslist");
+				stateSelect.setAttribute("onChange","getStateInfo()");				
+         		displaycontent.appendChild(stateSelect);
+
+				for (i=0;i<response.statesarray.length;i++){
+        	    	
+					var state_abbreviation = response.statesarray[i].state_abbreviation;
+					var state_name = response.statesarray[i].state_name;
+					
+					if (stateSelect != null && stateSelect.options != null)
+					{
+					   stateSelect.options[stateSelect.options.length] =
+					     new Option(state_name, state_abbreviation, false, true);
+					}					
+				}
+				stateSelect.options[0].selected = true;
+				displaycontent.appendChild(stateSelect);
+				var stateDetailDiv = document.createElement("div");
+				stateDetailDiv.setAttribute("id","statedetails");
+				displaycontent.appendChild(stateDetailDiv);				
+				getStateInfo();
+			}
+    	}
+	}
+	
+	function getStateInfo(state_abbreviation)
+	{
+		var selectedState = document.getElementById("stateslist");
+		state_abbreviation = escape(selectedState.value);
+		var url = "stateinfo_json.php?state_abbreviation=" + state_abbreviation;
+
+        req = new XMLHttpRequest();
+
+    	req.open("GET", url, true);
+    	req.onreadystatechange = getStateInfoCallBack;
+    	req.send(null);
+	}
+	
+	function getStateInfoCallBack()
+	{
+		if (req.readyState == 4) {
+        	if (req.status == 200) {
+			
+			//document.write(req.responseText);
+			var response = req.responseText.parseJSON();
+			var selectedState = document.getElementById("stateslist");
+			var statesarray = response.statesarray;
+			var state = response.statesarray[0].state_name;
+			
+			
+			
+			var state_abbreviation = response.statesarray[0].state_abbreviation;
+			var state_name = response.statesarray[0].state_name;
+			var state_flag = response.statesarray[0].state_flag;
+			var state_image = response.statesarray[0].state_image;
+			var state_capital = response.statesarray[0].state_capital;
+			
+			var stateinfo = "<h3>" + state_name + " (" + state_abbreviation + ")" + "</h3>";
+			stateinfo += "<p>" + "<b>" + "Capital City: " + "</b>" + state_capital + "</p>";
+			stateinfo +=  "<img src='" + state_image + "'alt='" + state_name + "'/>";
+			stateinfo += "<p>" + "<b>" + "Major Cities: " + "</b>" + "<br>" ;
+			
+			for (var i =5; i<statesarray.length; i++)
+			{
+				var city_name = response.statesarray[i].city_name; 
+				if(city_name){
+					stateinfo += city_name + "<br>";
+				}
+			}
+			stateinfo += "</p>";
+			
+			stateinfo += "<p>" + "<b>" + "Major Attractions: " + "</b>" + "<br>" ;
+			
+			for (var i =10; i<statesarray.length; i++)
+			{
+				var attraction_name = response.statesarray[i].attraction_name; 
+				stateinfo += attraction_name + "<br>";
+			}
+			stateinfo += "</p>";
+			
+			
+			
+			document.getElementById("statedetails").innerHTML = stateinfo;
+			
+	
+			}
+		}
+	}
+	
+	
+	function getCities()
+			{
+			var url = "cities_json.php";
+
+	            req = new XMLHttpRequest();
+
+	            req.open("GET", url, true);
+	            req.setRequestHeader("Accept", "application/json; charset=utf-8");
+	            req.onreadystatechange = getCitiesCallBack;
+	            req.send(null);
+			}
+			
+			function getCitiesCallBack()
+			{
+			if (req.readyState == 4) {
+	                if (req.status == 200) {
+
+	                    var response = req.responseText.parseJSON();
+	                    var displaycontent = document.getElementById("displaycontent");
+
+	                    while (displaycontent.hasChildNodes()) {
+	                        displaycontent.removeChild(displaycontent.lastChild);
+	                    }
+
+	                    var citySelect = document.createElement("select");
+	                    citySelect.setAttribute("id", "citylist");
+						citySelect.setAttribute("onChange", "getCityInfo()");
+	                    displaycontent.appendChild(citySelect);
+
+	                    for (i = 0; i < response.citiesarray.length; i++) {
+	                        var city_id = response.citiesarray[i].city_id;
+	                        var city_name = response.citiesarray[i].city_name;
+							var State_abbreviation = response.citiesarray[i].state_abbreviation;
+
+	                        if (citySelect != null && citySelect.options != null) {
+	                            citySelect.options[citySelect.options.length] =
+					         new Option(city_name, city_id, false, true);
+	                        }
+	                    }
+	                    citySelect.options[0].selected = true;
+	                    displaycontent.appendChild(citySelect);
+	                    var cityDetailDiv = document.createElement("div");
+	                    cityDetailDiv.setAttribute("id", "citydetails");
+	                    displaycontent.appendChild(cityDetailDiv);
+	                    getCityInfo();
+	                }
+					}
+			}
+			
+			function getCityInfo(city_id) 
+			{
+			
+			var selectedCity = document.getElementById("citylist");
+	        city_id = escape(selectedCity.value);
+
+	                var url = "cityinfo_json.php?city_id=" + city_id; ;
+
+	                req = new XMLHttpRequest();
+	                req.open("GET", url, true);
+	                req.setRequestHeader("Accept", "application/json; charset=utf-8");
+	                req.onreadystatechange = getCityInfoCallback;
+	                req.send(null);
+			}
+			
+			function getCityInfoCallback() 
+			{
+			if (req.readyState == 4) 
+				{
+	              if (req.status == 200) {
+				  
+				  var response = req.responseText.parseJSON();
+				  //document.write(response);
+				  var citySelect = document.getElementById("citylist");
+				  var citiesarray = response.citiesinfoarray;
+	              var city_name = citiesarray[0].city_name;
+				  var city_id = citiesarray[0].city_id;
+	              var city_image = citiesarray[0].city_image;
+				  var city_attraction = citiesarray[0].attraction_name;
+				  var city_lat = citiesarray[0].city_lat;
+				  var city_long = citiesarray[0].city_long;
+				  var state_abbreviation = citiesarray[0].state_abbreviation;
+								
+				  var cityinfo = "<h3>" + "<b>" + "State Search" + "</b>" + "</h3>";
+				  cityinfo = "<p>" + city_name + "</p>";
+				  
+				  cityinfo += "<p>" + "<b>" + "Latitude: " + "</b>";
+				  cityinfo += city_lat;
+				  
+				  cityinfo += "<b>" + " Longitude: " + "</b>";
+				  cityinfo += city_long + "</p>";
+				  
+				  cityinfo += "<p>" + "<b>" + " State Name: " + "</b>";
+				  cityinfo += state_abbreviation + "</p>";
+				  
+				  if (state_abbreviation == "AR")
+								{
+									cityinfo += "<h3>" + " This city is in Arkansas" + "</h3>";
+								}
+								if (state_abbreviation == "AK")
+								{
+									cityinfo += "<h3>" + " This city is in Alaska" + "</h3>";
+								}
+								if (state_abbreviation == "AL")
+								{
+									cityinfo += "<h3>" + " This city is in Alabama" + "</h3>";
+								}
+								if (state_abbreviation == "AZ")
+								{
+									cityinfo += "<h3>" + " This city is in Arizona" + "</h3>";
+								}
+								if (state_abbreviation == "CA")
+								{
+									cityinfo += "<h3>" + " This city is in California" + "</h3>";
+								}
+								if (state_abbreviation == "CO")
+								{
+									cityinfo += "<h3>" + " This city is in Colorado" + "</h3>";
+								}
+								if (state_abbreviation == "CT")
+								{
+									cityinfo += "<h3>" + " This city is in Connecticut" + "</h3>";
+								}
+								if (state_abbreviation == "DE")
+								{
+									cityinfo += "<h3>" + " This city is in Delaware" + "</h3>";
+								}
+				  
+				  
+	                            cityinfo += "<img src='images/" + city_image + "' />";
+								if(city_attraction)
+								{
+									
+								cityinfo += "<p>" + "<b>" + "Major Attractions: " + "</b>" + "<br>" + "</p>" ;
+								cityinfo += city_attraction + "<br>";
+								
+								}
+								else
+								{
+								cityinfo += "</p>" + " This city has no major attractions" + "</p>";
+								}
+								document.getElementById("citydetails").innerHTML = cityinfo;
+							}		
+				}
+			}
+			
+	
+	function getAttractions() 
+				{
+				var url = "attractions_json.php";
+	            req = new XMLHttpRequest();
+	            req.open("GET", url, true);
+	            req.setRequestHeader("Accept", "application/json; charset=utf-8");
+	            req.onreadystatechange = getAttractionsCallBack;
+	            req.send(null);
+				}
+				
+				
+				function getAttractionsCallBack()
+				{
+				if (req.readyState == 4) {
+	        if (req.status == 200) {
+
+	            var response = req.responseText.parseJSON();
+	            var displaycontent = document.getElementById("displaycontent");
+
+	            while (displaycontent.hasChildNodes()) {
+	                displaycontent.removeChild(displaycontent.lastChild);
+	            }
+
+	            var attractionSelect = document.createElement("select");
+	            attractionSelect.setAttribute("id", "attractionslist");
+				attractionSelect.setAttribute("onChange", "getAttractionInfo()");
+	            displaycontent.appendChild(attractionSelect);
+				
+	            for (i = 0; i < response.attractionsarray.length; i++) {
+	                var state_id = response.attractionsarray[i].attraction_id;
+	                var state_name = response.attractionsarray[i].attraction_name;
+					var state_abbreviation = response.attractionsarray[i].state_abbreviation;
+
+	                if (attractionSelect != null && attractionSelect.options != null) {
+	                    attractionSelect.options[attractionSelect.options.length] =
+					         new Option(state_name, state_id, false, true);
+	                }
+	            }
+				
+	            attractionSelect.options[0].selected = true;
+	            displaycontent.appendChild(attractionSelect);
+	            var attractionDetailDiv = document.createElement("div");
+	            attractionDetailDiv.setAttribute("id", "attractiondetails");
+	            displaycontent.appendChild(attractionDetailDiv);
+	            getAttractionInfo();
+	        }
+			}
+			}
+			
+			function getAttractionInfo(state_abbreviation)
+			{
+			var selectedAttraction = document.getElementById("attractionslist");
+	                state_abbreviation = escape(selectedAttraction.value);
+
+	                var url = "attractioninfo_json.php?state_abbreviation=" + state_abbreviation; ;
+
+	                req = new XMLHttpRequest();
+	                req.open("GET", url, true);
+	                req.setRequestHeader("Accept", "application/json; charset=utf-8");
+	                req.onreadystatechange = getAttractionInfoCallBack;
+	                req.send(null);
+			}
+			
+			function getAttractionInfoCallBack()
+			{
+			if (req.readyState == 4) 
+			{
+	              if (req.status == 200) {
+				  
+				  
+				  var response = req.responseText.parseJSON();
+				  var selectedAttraction = document.getElementById("citylist");
+				  var attractionsarray = response.attractionsarray;
+				  
+				  var attraction = response.attractionsarray[0].attraction_name; 
+
+	                            var state_abbreviation = response.attractionsarray[0].state_abbreviation;
+	                            var attraction_name = response.attractionsarray[0].attraction_name;
+	                            var attraction_long = response.attractionsarray[0].attraction_long;
+								var attraction_lat = response.attractionsarray[0].attraction_lat;
+	                            var attraction_image = response.attractionsarray[0].attraction_image;
+								
+								var attractioninfo = "<h3>" + "State Search" + "</h3>";
+								attractioninfo = "<p>" + attraction_name + " (" + state_abbreviation + ")" + "</p>";
+								
+								if (state_abbreviation == "AR")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Arkansas" + "</h3>";
+								}
+								if (state_abbreviation == "AK")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Alaska" + "</h3>";
+								}
+								if (state_abbreviation == "AL")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Alabama" + "</h3>";
+								}
+								if (state_abbreviation == "AZ")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Arizona" + "</h3>";
+								}
+								if (state_abbreviation == "CA")
+								{
+									attractioninfo = "<h3>" + " This attraction is in California" + "</h3>";
+								}
+								if (state_abbreviation == "CO")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Colorado" + "</h3>";
+								}
+								if (state_abbreviation == "CT")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Connecticut" + "</h3>";
+								}
+								if (state_abbreviation == "DE")
+								{
+									attractioninfo = "<h3>" + " This attraction is in Delaware" + "</h3>";
+								}
+
+	                            
+	                            attractioninfo += "<img src='" + attraction_image + "' alt='" + " ' />";								
+								document.getElementById("attractiondetails").innerHTML = attractioninfo;
+			}
+			}
+			
+			
+			
+			
+			}
+	
+	function getPeople()
+	{
+		var url = "people_json.php";
+
+        req = new XMLHttpRequest();
+
+    	req.open("GET", url, true);
+    	req.onreadystatechange = getPeopleCallBack;
+    	req.send(null);
+	}
+	
+	function getPeopleCallBack()
+	{
+		if (req.readyState == 4) {
+        	if (req.status == 200) {
+        	    
+        	    var response = req.responseText.parseJSON();
+				var displaycontent = document.getElementById("displaycontent");
+				
+				while (displaycontent.hasChildNodes()) {
+    				displaycontent.removeChild(displaycontent.lastChild);
+				}
+
+				var personSelect = document.createElement("select");
+				personSelect.setAttribute("id","personlist");
+				personSelect.setAttribute("onChange","getPeopleInfo()");				
+         		displaycontent.appendChild(personSelect);
+	
+        	    for (i=0;i<response.personarray.length;i++){
+					var person_id = response.personarray[i].person_id;
+					var person_name = response.personarray[i].person_name;
+					
+					if (personSelect != null && personSelect.options != null)
+					{
+					   personSelect.options[personSelect.options.length] =
+					     new Option(person_name, person_id, false, true);
+					}					
+				}
+				personSelect.options[0].selected = true;
+				displaycontent.appendChild(personSelect);
+				var personDetailDiv = document.createElement("div");
+				personDetailDiv.setAttribute("id","persondetails");
+				displaycontent.appendChild(personDetailDiv);				
+				getPeopleInfo();
+			}
+    	}
+	}
+	
+	function getPeopleInfo(person_id)
+	{
+		var selectedPerson = document.getElementById("personlist");
+		person_id = escape(selectedPerson.value);
+		var url = "peopleinfo_json.php?person_id=" + person_id;
+
+        req = new XMLHttpRequest();
+
+    	req.open("GET", url, true);
+    	req.onreadystatechange = getPeopleInfoCallBack;
+    	req.send(null);
+	}
+	
+	function getPeopleInfoCallBack()
+	{
+		if (req.readyState == 4) {
+        	if (req.status == 200) {
+			
+			var response = req.responseText.parseJSON();
+			var selectedPerson = document.getElementById("personlist");
+			var personarray = response.personarray;
+			var person = response.personarray[0].person_name;
+			
+			var person_id = response.personarray[0].person_id;
+			var person_name = response.personarray[0].person_name;
+			var person_category = response.personarray[0].person_category;
+			var person_image = response.personarray[0].person_image;
+			var person_story = response.personarray[0].person_story;
+			
+			var personinfo = "<h3>" + person_name + "</h3>";
+			personinfo += "<p>" + "Background : " + person_category + "</p>";
+			personinfo +=  "<img src='" + person_image + "'alt='" + person_name + "'/>";
+			personinfo += "<p>" + "Tag: " + person_story + "</p>";
+			
+			document.getElementById("persondetails").innerHTML = personinfo;
+	
+			}
+		}
+	}
+	
+    function setmessage(messagevalue) {
+        var message = document.getElementById("message");
+        message.innerHTML = messagevalue;
+    }
+	
+	function expand(divname)
+	{
+		var mydiv=document.getElementById(divname);
+		var currentdisplay = mydiv.style.display;
+		mydiv.style.display = "block";    
+	}
+        
+	function collapse(divname)
+	{
+		var mydiv=document.getElementById(divname);
+		var currentdisplay = mydiv.style.display;
+		mydiv.style.display = "none";        
+	}
+	
+	function admin()
+	{
+		expand("admincontent");
+		collapse("displaycontent");
+		setform();
+	}
+
+</script>  
+  
+</head>
+
+<body onLoad="getStates()">
+  <div id="container">
+	<div id="header">
+	<h1>GCU USA</h1>
+	<h2>Peanut Butter Jelly Time</h2>
+  </div>
+  <div id="main-nav">
+	<div id="searchBox">
+	  <form method="post" action="./search.php" id="searchForm">
+	  <div>
+		<p>
+			<input maxlength="100" id="searchText" name="searchText" size="25" />
+			<input type="submit" value="Go!" /><br />
+		</p>
+	  </div>
+	  </form>
+    </div>
+
+    <ul id="menu">
+	<li>
+		<a id="Menu_HomeLink" href="javascript:getStates()">Home</a>
+	</li>
+	<li>
+		<a id="Menu_AttractionsLink" href="javascript:getAttractions()">Attractions</a>
+	</li>
+	<li>
+		<a id="Menu_CitiesLink" href="javascript:getCities()">Cities</a>
+	</li>
+	<li>
+		<a id="Menu_StatsLink" href="javascript:getPeople()">Famous People</a>
+	</li>     
+	</ul>
+  </div>
+
+  <div id="sidebar-a">
+  </div>
+  <div id="content">
+  	<div id="displaycontent"></div>
+    <div id="admincontent" style="display:none">
+    </div>
+  </div>
+  <div id="footer">
+	
+  </div>
+</body>
+</html>
+
+  
